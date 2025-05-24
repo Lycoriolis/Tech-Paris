@@ -36,6 +36,11 @@
   },
   "dependencies": {
     "@11labs/client": "^0.1.4",
-    "@elevenlabs/elevenlabs-js": "^2.1.0"
+    "@elevenlabs/elevenlabs-js": "^2.1.0",
+    "@huggingface/transformers": "^3.5.1",
+    "@mistralai/mistralai": "^1.6.1",
+    "@xenova/transformers": "^2.17.2",
+    "dotenv": "^16.5.0",
+    "pdfjs-dist": "^3.11.174"
   }
 }
