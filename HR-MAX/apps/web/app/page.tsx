@@ -2,23 +2,24 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-
-interface InterviewData {
-  username: string
-  cv: File | null
-  linkedinUrl: string
-  additionalInfo: string
-  review?: string
-}
-
+import useStore from "@/app/state/store"
+import { toBase64 } from "@/app/lib/tools"
+import { readFileSync } from "fs"
 export default function Page() {
   const router = useRouter()
-  const [interviewData, setInterviewData] = useState<InterviewData>({
-    username: "",
-    cv: null,
-    linkedinUrl: "",
-    additionalInfo: "",
-  })
+  // Get both values and setters from the store
+  const {
+    username,
+    setUsername,
+    setRoom,
+    cv,
+    setCv,
+    linkedinUrl,
+    setLinkedinUrl,
+    additionalInfo,
+    setAdditionalInfo
+  } = useStore()
+
   const [review, setReview] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -32,7 +33,7 @@ export default function Page() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setInterviewData({ ...interviewData, cv: e.target.files[0] })
+      setCv(e.target.files[0])
     }
   }
 
@@ -41,28 +42,31 @@ export default function Page() {
     setIsSubmitting(true)
 
     try {
-      // Here you would typically send the data to your backend
-      // For now, we'll simulate a response
-      const mockReview = `Interview Review for ${interviewData.username}:
+      // generate an unique room id
+      const roomId = `interview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-Based on the provided information:
-- LinkedIn Profile: ${interviewData.linkedinUrl}
-- Additional Information: ${interviewData.additionalInfo}
-
-The candidate appears to be a good fit for the position. The interview will focus on:
-1. Technical skills assessment
-2. Problem-solving abilities
-3. Communication skills
-4. Team collaboration experience
-
-The interview will be tailored to the candidate's background and experience level.`
-
-      // Save review to localStorage
-      localStorage.setItem("interviewReview", mockReview)
-      setReview(mockReview)
-
-      // Navigate to interview page
-      router.push("/interview")
+      // save room id to the global store 
+      setRoom(roomId)
+      
+      // Convert CV to Buffer
+      const arrayBuffer = await (cv as File).arrayBuffer()
+      const cvBuffer = Buffer.from(arrayBuffer)
+  
+      // call api endpoint here to post data to the database
+      await fetch("http://localhost:3001/api/session/new", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          roomId,
+          username,
+          cv: Array.from(cvBuffer), // Convert Buffer to array for JSON transmission
+          linkedinUrl,
+          additionalInfo
+        })
+      })
+      router.push(`/room/${roomId}`)
     } catch (error) {
       console.error("Error submitting form:", error)
       alert("Failed to submit form. Please try again.")
@@ -85,8 +89,8 @@ The interview will be tailored to the candidate's background and experience leve
                 </label>
                 <input
                   type="text"
-                  value={interviewData.username}
-                  onChange={(e) => setInterviewData({ ...interviewData, username: e.target.value })}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -111,8 +115,8 @@ The interview will be tailored to the candidate's background and experience leve
                 </label>
                 <input
                   type="url"
-                  value={interviewData.linkedinUrl}
-                  onChange={(e) => setInterviewData({ ...interviewData, linkedinUrl: e.target.value })}
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="https://linkedin.com/in/your-profile"
                   required
@@ -124,8 +128,8 @@ The interview will be tailored to the candidate's background and experience leve
                   Additional Information
                 </label>
                 <textarea
-                  value={interviewData.additionalInfo}
-                  onChange={(e) => setInterviewData({ ...interviewData, additionalInfo: e.target.value })}
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={4}
                   placeholder="Any additional information you'd like to share..."
