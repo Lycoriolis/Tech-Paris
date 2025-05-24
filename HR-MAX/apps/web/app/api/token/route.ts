@@ -5,10 +5,11 @@ import { AccessToken } from 'livekit-server-sdk';
 export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
-  const room = req.nextUrl.searchParams.get('session');
+  const room = req.nextUrl.searchParams.get('room');
   const username = req.nextUrl.searchParams.get('username');
+  console.log("SERVER IDE", room, username)
   if (!room) {
-    return NextResponse.json({ error: 'Missing "session" query parameter' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing "room" query parameter' }, { status: 400 });
   } else if (!username) {
     return NextResponse.json({ error: 'Missing "username" query parameter' }, { status: 400 });
   }
