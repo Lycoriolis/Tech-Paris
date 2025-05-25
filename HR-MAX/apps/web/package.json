@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@livekit/agents": "^0.7.5",
+    "@livekit/agents-plugin-deepgram": "^0.5.6",
+    "@livekit/agents-plugin-elevenlabs": "^0.6.2",
+    "@livekit/agents-plugin-openai": "^0.9.1",
+    "@livekit/agents-plugin-silero": "^0.5.6",
     "@livekit/components-react": "^2.9.9",
     "@livekit/components-styles": "^1.1.6",
     "class-variance-authority": "^0.7.1",

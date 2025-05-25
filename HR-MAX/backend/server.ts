@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 import User from "./mongodb/schema";
-
+import AgentResult from "./mongodb/result_schema";
 dotenv.config();
 
 const app = express();
@@ -83,4 +83,19 @@ app.get("/api/users", async (req: Request, res: Response): Promise<any> => {
     } catch (error) {
         console.error("Error fetching users:", error);
     }
+});
+// post the result of the agent
+app.post("/api/agent/results", async (req: Request, res: Response): Promise<any> => {
+    const { feedback, finalScore, resultId } = req.body;
+    const result = new AgentResult({ feedback, finalScore, resultId });
+    await result.save();
+});
+
+app.get("/api/agent/results", async (req: Request, res: Response): Promise<any> => {
+    const { resultId } = req.body;
+    const results = await AgentResult.find({resultId});
+    if (!results) {
+        return res.status(404).json({ error: "Results not found" });
+    }
+    res.status(200).json({ results });
 });
